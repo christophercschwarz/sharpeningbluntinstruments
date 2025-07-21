@@ -69,22 +69,23 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
     
   }
   
-  # Step 2: Construct second-stage design matrix
-  endo_mat <- as.data.frame(data[endogenous])
+  # Step 2: Construct second-stage data matrix and formula
   resids_mat <- as.data.frame(first_stage_resids)
   colnames(resids_mat) <- paste0(endogenous,"_resid")
-  outcome_vec <- data[[outcome]]
+  data_with_resids <- cbind(data,resids_mat)
+  
+  formula_str <- paste0(outcome," ~ ")
+  formula_str <- paste0(formula_str, paste(endogenous, collapse = " + "))
+  formula_str <- paste0(formula_str, " + ", paste(paste0(endogenous,"_resid"), collapse = " + "))
   
   if (!is.null(unlist(controls))) {
-    outcome_controls <- controls[[1]]
-    control_mat <- data[, outcome_controls, drop = FALSE]
-    X_second_stage <- cbind(endo_mat, resids_mat, control_mat)
-  } else {
-    X_second_stage <- cbind(endo_mat, resids_mat)
+    
+    formula_str <- paste0(formula_str, " + ", paste(controls[[1]], collapse = " + "))
+    
   }
   
   # Estimate second stage
-  second_stage_lm <- lm(outcome_vec ~ ., data = X_second_stage)
+  second_stage_lm <- gam(as.formula(formula_str), data = data_with_resids)
   
   # Save and return
   if(save_fs){
