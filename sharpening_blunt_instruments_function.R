@@ -4,6 +4,7 @@
 # Author:  Christopher Schwarz                                                 #
 # Date:    07/19/2025                                                          #
 # Purpose: Function for bootstraped inference of non-linear first stage IV     #
+# Edits:   07/20/2025: Better handling of control variables                    #
 ################################################################################
 
 library(mgcv)
@@ -34,8 +35,8 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
   # Ensure controls list is valid
   if (is.null(controls) || length(controls) == 0) {
     controls <- vector("list", length(endogenous))
-  } else if (length(controls) != length(endogenous)) {
-    stop("Length of controls must match number of endogenous variables.")
+  } else if (length(controls) != length(endogenous) + 1) {
+    stop("Length of controls must match number of endogenous variables plus one.")
   }
   
   # Step 1: Estimate first-stage models and get residuals
@@ -48,6 +49,7 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
   }
   
   for (i in seq_along(endogenous)) {
+    
     endo_var <- endogenous[i]
     ctrl_vars <- controls[[i + 1]]
     
@@ -74,8 +76,8 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
   outcome_vec <- data[[outcome]]
   
   if (!is.null(unlist(controls))) {
-    controls <- controls[[1]]
-    control_mat <- data[, controls, drop = FALSE]
+    outcome_controls <- controls[[1]]
+    control_mat <- data[, outcome_controls, drop = FALSE]
     X_second_stage <- cbind(endo_mat, resids_mat, control_mat)
   } else {
     X_second_stage <- cbind(endo_mat, resids_mat)
