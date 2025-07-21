@@ -26,6 +26,9 @@ handlers(list(handler_progress(
 #       Non-linear first stage two stage residual inclusion; single shot       #
 ################################################################################
 
+# Controls is a list of control variables, the first being for the second stage
+#  and the subsequent entries being for each of the first stage regressions.
+
 nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL, save_fs = TRUE){
   
   # Ensure controls list is valid
@@ -46,9 +49,9 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
   
   for (i in seq_along(endogenous)) {
     endo_var <- endogenous[i]
-    ctrl_vars <- controls[[i]]
+    ctrl_vars <- controls[[i + 1]]
     
-    formula_str <- paste0(endo_var, " ~ s(", exogenous, ")")
+    formula_str <- paste0(endo_var, " ~ te(", exogenous, ")")
     if (!is.null(ctrl_vars)) {
       formula_str <- paste0(formula_str, " + ", paste(ctrl_vars, collapse = " + "))
     }
@@ -71,9 +74,9 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
   outcome_vec <- data[[outcome]]
   
   if (!is.null(unlist(controls))) {
-    all_controls <- unique(unlist(controls))
-    control_mat <- data[, all_controls, drop = FALSE]
-    X_second_stage <- cbind(endo_mat, control_mat, resids_mat)
+    controls <- controls[[1]]
+    control_mat <- data[, controls, drop = FALSE]
+    X_second_stage <- cbind(endo_mat, resids_mat, control_mat)
   } else {
     X_second_stage <- cbind(endo_mat, resids_mat)
   }
@@ -100,6 +103,9 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
 ################################################################################
 #       Non-linear first stage two stage residual inclusion; bootstrapper      #
 ################################################################################
+
+# Controls is a list of control variables, the first being for the second stage
+#  and the subsequent entries being for each of the first stage regressions.
 
 nlfstsri_boot <- function(data, n_boot, outcome, endogenous, exogenous, controls = NULL, save_fs = TRUE, cores = parallel::detectCores()){
   
