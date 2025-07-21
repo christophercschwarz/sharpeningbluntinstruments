@@ -1,1 +1,7 @@
 This repository containts functions for estimating multiple causal effects from a single source of exogenous variation utilizing a 'two stage residual inclusion' (2SRI) and flexible first stage fits, as well as a diagnostic for evaluating whether the rank condition has been satisfied.
+
+To import this code, use
+
+```R
+source("https://raw.githubusercontent.com/christophercschwarz/sharpeningbluntinstruments/refs/heads/main/sharpening_blunt_instruments_function.R")
+```
