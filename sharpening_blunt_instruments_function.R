@@ -163,6 +163,30 @@ system_kappa <- function(nlfstsri_output){
   
 }
 
+
+################################################################################
+#           Diagnostic: First Stage Correlations from Non-Linear Fits          #
+################################################################################
+
+system_corrs <- function(nlfstsri_output){
+  
+  lapply(nlfstsri_output$initialization$first_stages, function(first_stage){
+    
+    all_terms <- predict(first_stage, type = "terms")
+    endo_term <- all_terms[,grepl("te(",colnames(all_terms),fixed = TRUE)][,1]
+    term_name <- grep("te(",colnames(all_terms),fixed = TRUE,value = TRUE)[1]
+    endo_term <- as.data.frame(endo_term)
+    colnames(endo_term) <- names(first_stage$model)[1]
+    endo_term
+    
+  }) -> first_stage_fits
+  
+  Sigma <- cor(do.call("cbind",first_stage_fits))
+  
+  return(Sigma)
+  
+}
+
 # ################################################################################
 # #                               Simulated Example                              #
 # ################################################################################
