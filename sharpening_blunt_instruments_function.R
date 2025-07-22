@@ -144,7 +144,7 @@ nlfstsri_boot <- function(data, n_boot, outcome, endogenous, exogenous, controls
   
   lapply(out, function(x){
     
-    data.frame(t(tmp))
+    data.frame(t(out))
     
   }) -> out
   
