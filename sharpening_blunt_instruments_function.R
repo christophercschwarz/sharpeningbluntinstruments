@@ -11,6 +11,7 @@ library(mgcv)
 library(future)
 library(future.apply)
 library(progressr)
+library(data.table)
 
 ################################################################################
 #                                Progress Handler                              #
@@ -127,7 +128,9 @@ nlfstsri_boot <- function(data, n_boot, outcome, endogenous, exogenous, controls
   with_progress({
     p <- progressor(along = 1:n_boot)
     out <- future_lapply(1:n_boot, function(x) {
+      
       p()
+
       nlfstsri_core(data[sample(1:nrow(data),replace = TRUE),],
                     outcome,
                     endogenous,
@@ -139,8 +142,14 @@ nlfstsri_boot <- function(data, n_boot, outcome, endogenous, exogenous, controls
   
   plan(sequential)
   
+  lapply(out, function(x){
+    
+    data.frame(t(tmp))
+    
+  }) -> out
+  
   out <- list(initialization = initialization,
-              second_stage_boots = do.call("rbind",out))
+              second_stage_boots = rbindlist(out, fill = TRUE))
 
   return(out)
 
