@@ -8,6 +8,7 @@
 ################################################################################
 
 library(mgcv)
+library(future)
 library(future.apply)
 library(progressr)
 
