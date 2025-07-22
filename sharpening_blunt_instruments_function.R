@@ -53,8 +53,16 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
     
     endo_var <- endogenous[i]
     ctrl_vars <- controls[[i + 1]]
+  
+    formula_str <- paste0(endo_var, " ~ ")
     
-    formula_str <- paste0(endo_var, " ~ te(", exogenous, ")")
+    for(inst in exogenous){
+      
+      formula_str <- paste(formula_str, paste0("+ te(",inst,")"))
+      
+    }
+    
+    
     if (!is.null(ctrl_vars)) {
       formula_str <- paste0(formula_str, " + ", paste(ctrl_vars, collapse = " + "))
     }
