@@ -62,7 +62,6 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
       
     }
     
-    
     if (!is.null(ctrl_vars)) {
       formula_str <- paste0(formula_str, " + ", paste(ctrl_vars, collapse = " + "))
     }
