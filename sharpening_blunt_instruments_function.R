@@ -149,11 +149,15 @@ nlfstsri_boot <- function(data, n_boot, outcome, endogenous, exogenous, controls
   }) -> out
   
   out <- list(initialization = initialization,
+              endo_vars = endogenous,
+              exogenous = exogenous,
               second_stage_boots = rbindlist(out, fill = TRUE))
 
   return(out)
 
 }
+
+
 
 ################################################################################
 #          Diagnostic: First Stage Precision Loss from Non-Linear Fits         #
@@ -164,10 +168,18 @@ system_kappa <- function(nlfstsri_output){
   lapply(nlfstsri_output$initialization$first_stages, function(first_stage){
     
     all_terms <- predict(first_stage, type = "terms")
-    endo_term <- all_terms[,grepl("te(",colnames(all_terms),fixed = TRUE)][,1]
-    term_name <- grep("te(",colnames(all_terms),fixed = TRUE,value = TRUE)[1]
+    endo_term <- data.frame(all_terms[,grepl(paste(nlfstsri_output$exogenous,
+                                                   collapse = "|"),
+                                             colnames(all_terms))])
+    
+    term_name <- grep(paste(nlfstsri_output$exogenous,
+                            collapse = "|"),
+                      colnames(all_terms),
+                      fixed = TRUE,
+                      value = TRUE)
+    
     endo_term <- as.data.frame(endo_term)
-    colnames(endo_term) <- names(first_stage$model)[1]
+    colnames(endo_term) <- paste0(names(first_stage$model)[1],"-",nlfstsri_output$exogenous) 
     endo_term
     
   }) -> first_stage_fits
@@ -180,20 +192,30 @@ system_kappa <- function(nlfstsri_output){
   
 }
 
-
 ################################################################################
 #           Diagnostic: First Stage Correlations from Non-Linear Fits          #
 ################################################################################
+
+# Only appropriately works when there is one instrument. Could rework for the
+# output to contain the endovars, and this collects them all.
 
 system_corrs <- function(nlfstsri_output){
   
   lapply(nlfstsri_output$initialization$first_stages, function(first_stage){
     
     all_terms <- predict(first_stage, type = "terms")
-    endo_term <- all_terms[,grepl("te(",colnames(all_terms),fixed = TRUE)][,1]
-    term_name <- grep("te(",colnames(all_terms),fixed = TRUE,value = TRUE)[1]
+    endo_term <- data.frame(all_terms[,grepl(paste(nlfstsri_output$exogenous,
+                                                   collapse = "|"),
+                                             colnames(all_terms))])
+    
+    term_name <- grep(paste(nlfstsri_output$exogenous,
+                            collapse = "|"),
+                      colnames(all_terms),
+                      fixed = TRUE,
+                      value = TRUE)
+    
     endo_term <- as.data.frame(endo_term)
-    colnames(endo_term) <- names(first_stage$model)[1]
+    colnames(endo_term) <- paste0(names(first_stage$model)[1],"-",nlfstsri_output$exogenous) 
     endo_term
     
   }) -> first_stage_fits
