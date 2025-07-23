@@ -120,7 +120,7 @@ nlfstsri_core <- function(data, outcome, endogenous, exogenous, controls = NULL,
 #  and the subsequent entries being for each of the first stage regressions.
 
 nlfstsri_boot <- function(data, n_boot, outcome, endogenous, exogenous, controls = NULL, save_fs = TRUE, cores = parallel::detectCores()){
-  
+
   initialization <- nlfstsri_core(data, outcome, endogenous, exogenous, controls, save_fs)
   
   plan(multisession, workers = cores)
@@ -136,24 +136,23 @@ nlfstsri_boot <- function(data, n_boot, outcome, endogenous, exogenous, controls
                     endogenous,
                     exogenous,
                     controls,
-                    save_fs = FALSE)$coefficients
+                    save_fs = FALSE) -> boot
+      
+      data.frame(t(data.frame(boot$coefficients)))
+      
     }, future.seed = TRUE)
   })
   
   plan(sequential)
   
-  lapply(out, function(x){
-    
-    data.frame(t(out))
-    
-  }) -> out
+  boots <- rbindlist(out, fill = TRUE)
   
-  out <- list(initialization = initialization,
+  full <- list(initialization = initialization,
               endo_vars = endogenous,
               exogenous = exogenous,
-              second_stage_boots = rbindlist(out, fill = TRUE))
-
-  return(out)
+              second_stage_boots = boots)
+  
+  return(full)
 
 }
 
