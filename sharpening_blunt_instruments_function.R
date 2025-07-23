@@ -195,9 +195,6 @@ system_kappa <- function(nlfstsri_output){
 #           Diagnostic: First Stage Correlations from Non-Linear Fits          #
 ################################################################################
 
-# Only appropriately works when there is one instrument. Could rework for the
-# output to contain the endovars, and this collects them all.
-
 system_corrs <- function(nlfstsri_output){
   
   lapply(nlfstsri_output$initialization$first_stages, function(first_stage){
